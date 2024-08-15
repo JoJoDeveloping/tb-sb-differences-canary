@@ -53,4 +53,13 @@ mod test {
             *x3p += 1;
         }
     }
+
+    #[test]
+    pub fn fail_due_to_strict_provenance() {
+        unsafe {
+            let x = 42;
+            let ptr = x as *mut i32 as usize as *mut i32;
+            *ptr = 42;
+        }
+    }
 }
