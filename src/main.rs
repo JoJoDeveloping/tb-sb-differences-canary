@@ -62,4 +62,18 @@ mod test {
             *ptr = 42;
         }
     }
+
+    #[test]
+    /// Fails when `-Zmiri-tree-borrows-implicit-writes` is enabled
+    pub fn fail_with_implicit_writes() {
+        let mut x = 0u8;
+        let ptr = &raw mut x;
+        let res = dereference(&mut x, ptr);
+        assert_eq!(*res, 0);
+
+        fn dereference<T>(x: T, y: *mut u8) -> T {
+            let _ = unsafe { *y };
+            x
+        }
+    }
 }
