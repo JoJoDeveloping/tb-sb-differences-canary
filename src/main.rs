@@ -3,6 +3,8 @@ fn main() {
 }
 
 mod test {
+    use std::cell::UnsafeCell;
+
     #[test]
     pub fn fail_on_sb_only() {
         let mut vec = vec![42; 2];
@@ -75,5 +77,25 @@ mod test {
             let _ = unsafe { *y };
             x
         }
+    }
+
+    #[test]
+    /// Passes only when `-Zmiri-tree-borrows-no-precise-interior-mut` is set
+    pub fn fail_for_precise_interior_mut() {
+        #[repr(C)]
+        struct Foo {
+            x: u32,
+            y: UnsafeCell<u32>,
+        }
+        let f = Foo {
+            x: 41,
+            y: UnsafeCell::new(1),
+        };
+        let fr: *const Foo = &f;
+        let fr = fr.cast_mut();
+        unsafe {
+            (*fr).x += 1;
+        }
+        assert_eq!(f.x, 42);
     }
 }
