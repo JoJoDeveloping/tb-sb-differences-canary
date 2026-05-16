@@ -81,6 +81,20 @@ mod test {
     }
 
     #[test]
+    /// Normally fails when `-Zmiri-tree-borrows-implicit-writes` is enabled, but should be ignored with changes to Miri that create a custom ignore list.
+    pub fn should_be_ignored() {
+        let mut x = 0u8;
+        let ptr = &raw mut x;
+        let res = ignore_this(&mut x, ptr);
+        assert_eq!(*res, 0);
+    }
+
+    fn ignore_this<T>(x: T, y: *mut u8) -> T {
+        let _ = unsafe { *y };
+        x
+    }
+
+    #[test]
     /// Passes only when `-Zmiri-tree-borrows-no-precise-interior-mut` is set
     pub fn fail_for_precise_interior_mut() {
         #[repr(C)]
